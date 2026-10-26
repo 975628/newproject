@@ -1,7 +1,12 @@
+from io import BytesIO
+from tempfile import TemporaryDirectory
+
 from django.contrib.auth.models import User
-from django.test import TestCase, TransactionTestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, TransactionTestCase, override_settings
 from channels.layers import get_channel_layer
 from channels.testing import WebsocketCommunicator
+from PIL import Image
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -70,6 +75,35 @@ class SocialPlatformTests(TestCase):
         self.assertEqual(
             Notification.objects.filter(recipient=self.alex, kind="like").count(), 1
         )
+
+    def test_temporary_post_image_upload_is_served(self):
+        image_buffer = BytesIO()
+        Image.new("RGB", (2, 2), color="blue").save(image_buffer, format="PNG")
+        image_buffer.seek(0)
+
+        with TemporaryDirectory() as media_root:
+            with override_settings(
+                MEDIA_ROOT=media_root,
+                SERVE_MEDIA_FILES=True,
+            ):
+                self.client.force_login(self.alex)
+                response = self.client.post(
+                    reverse("home"),
+                    {
+                        "content": "Temporary photo",
+                        "audience": "public",
+                        "comments_enabled": "on",
+                        "image": SimpleUploadedFile(
+                            "temporary.png", image_buffer.read(), content_type="image/png"
+                        ),
+                    },
+                )
+                self.assertRedirects(response, reverse("home"))
+                post = Post.objects.get(author=self.alex)
+                image_response = self.client.get(post.image.url)
+                self.assertEqual(image_response.status_code, 200)
+                self.assertEqual(image_response["Content-Type"], "image/png")
+                self.assertTrue(b"".join(image_response.streaming_content))
 
     def test_friend_request_can_be_accepted(self):
         self.client.force_login(self.sam)

@@ -133,6 +133,9 @@ STORAGES = {
 }
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+SERVE_MEDIA_FILES = os.environ.get(
+    "SERVE_MEDIA_FILES", str(DEBUG)
+).lower() in {"true", "1", "yes"}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

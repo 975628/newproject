@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 from rest_framework.routers import DefaultRouter
 
 from api.views import (
@@ -25,6 +25,14 @@ api_router.register(
 api_router.register("notifications", NotificationViewSet, basename="api-notification")
 
 
+def serve_media_file(request, path):
+    if not settings.SERVE_MEDIA_FILES:
+        from django.http import Http404
+
+        raise Http404
+    return serve(request, path, document_root=settings.MEDIA_ROOT, show_indexes=False)
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(
@@ -41,7 +49,9 @@ urlpatterns = [
     path("notifications/", include("notifications.urls")),
     path("api/", include(api_router.urls)),
     path("api/profiles/<str:username>/", ProfileDetailView.as_view(), name="api-profile"),
+    re_path(
+        r"^media/(?P<path>.*)$",
+        serve_media_file,
+        name="media",
+    ),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
