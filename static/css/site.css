@@ -1,0 +1,68 @@
+body {
+    background: #f5f7fb;
+    color: #202838;
+}
+
+.navbar {
+    min-height: 64px;
+}
+
+.card {
+    border-radius: 14px;
+}
+
+.form-control,
+.form-select {
+    border-radius: 9px;
+}
+
+.auth-card {
+    max-width: 520px;
+}
+
+.post-image {
+    max-height: 560px;
+    width: auto;
+}
+
+.cover-image,
+.cover-placeholder {
+    height: 210px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.cover-placeholder {
+    background: linear-gradient(120deg, #dbeafe, #e9d5ff);
+}
+
+.profile-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-line {
+    background: #f5f7fb;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    padding-inline: 10px !important;
+}
+
+.notification-unread {
+    border-left: 4px solid #0d6efd;
+    background: #f4f8ff;
+}
+
+@media (max-width: 575px) {
+    .navbar .container {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-block: 10px;
+    }
+
+    .navbar .container > div {
+        flex-wrap: wrap;
+    }
+}

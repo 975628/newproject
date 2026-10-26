@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Friends | ConnectSphere{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+    <h1 class="h3 mb-4">Your connections</h1>
+    <section class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h2 class="h5">Friend requests</h2>
+        {% for item in incoming %}
+            <div class="d-flex justify-content-between align-items-center border-top py-3">
+                <a href="{% url 'profile' item.sender.username %}">@{{ item.sender.username }}</a>
+                <div class="d-flex gap-2">
+                    <form method="post" action="{% url 'respond_friend_request' item.pk %}">{% csrf_token %}<input type="hidden" name="action" value="accept"><button class="btn btn-sm btn-primary" type="submit">Accept</button></form>
+                    <form method="post" action="{% url 'respond_friend_request' item.pk %}">{% csrf_token %}<input type="hidden" name="action" value="decline"><button class="btn btn-sm btn-outline-secondary" type="submit">Decline</button></form>
+                </div>
+            </div>
+        {% empty %}<p class="text-secondary mb-0">No incoming requests.</p>{% endfor %}
+    </div></section>
+    <section class="card border-0 shadow-sm"><div class="card-body">
+        <h2 class="h5">Friends</h2>
+        {% for item in accepted %}
+            {% if item.sender_id == user.pk %}{% with friend=item.receiver %}<div class="border-top py-2"><a href="{% url 'profile' friend.username %}">@{{ friend.username }}</a></div>{% endwith %}
+            {% else %}{% with friend=item.sender %}<div class="border-top py-2"><a href="{% url 'profile' friend.username %}">@{{ friend.username }}</a></div>{% endwith %}{% endif %}
+        {% empty %}<p class="text-secondary mb-0">No friends yet. Find people from the feed.</p>{% endfor %}
+    </div></section>
+</div></div>
+{% endblock %}

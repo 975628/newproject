@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}@{{ profile_user.username }} | ConnectSphere{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+    <section class="card border-0 shadow-sm mb-4 overflow-hidden">
+        {% if profile_user.profile.cover_photo %}
+            <img class="cover-image" src="{{ profile_user.profile.cover_photo.url }}" alt="Cover photo">
+        {% else %}<div class="cover-placeholder"></div>{% endif %}
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between gap-3">
+                <div>
+                    {% if profile_user.profile.profile_picture %}
+                        <img class="profile-avatar mb-2" src="{{ profile_user.profile.profile_picture.url }}" alt="{{ profile_user.username }} profile picture">
+                    {% endif %}
+                    <h1 class="h3 mb-1">@{{ profile_user.username }}</h1>
+                    <p class="text-secondary mb-2">{{ profile_user.profile.bio|default:"No bio added yet." }}</p>
+                    {% if profile_user.profile.location %}<span class="small text-secondary">{{ profile_user.profile.location }}</span>{% endif %}
+                    {% if profile_user.profile.website %}<a class="small ms-2" href="{{ profile_user.profile.website }}" rel="nofollow noopener">{{ profile_user.profile.website }}</a>{% endif %}
+                </div>
+                {% if user == profile_user %}
+                    <a class="btn btn-outline-primary align-self-start" href="{% url 'edit_profile' %}">Edit profile</a>
+                {% elif user.is_authenticated %}
+                    <div class="d-flex gap-2">
+                        <form method="post" action="{% url 'follow_user' profile_user.pk %}">
+                            {% csrf_token %}<button class="btn btn-outline-primary" type="submit">{% if is_following %}Unfollow{% else %}Follow{% endif %}</button>
+                        </form>
+                        <form method="post" action="{% url 'send_friend_request' profile_user.pk %}">
+                            {% csrf_token %}<button class="btn btn-primary" type="submit">Add friend</button>
+                        </form>
+                        <form method="post" action="{% url 'block_user' profile_user.pk %}" onsubmit="return confirm('Block this account?');">
+                            {% csrf_token %}<button class="btn btn-outline-danger" type="submit">Block</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-4 mt-3 small">
+                <span><strong>{{ profile_user.posts.count }}</strong> posts</span>
+                <span><strong>{{ profile_user.followers.count }}</strong> followers</span>
+                <span><strong>{{ profile_user.following.count }}</strong> following</span>
+                <span class="text-secondary">Joined {{ profile_user.profile.joined_date|date:"M Y" }}</span>
+            </div>
+        </div>
+    </section>
+    <h2 class="h5 mb-3">Posts</h2>
+    {% for post in posts %}{% include "_post_card.html" %}{% empty %}
+        <p class="text-center text-secondary py-4">No posts to show.</p>
+    {% endfor %}
+</div></div>
+{% endblock %}

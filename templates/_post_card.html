@@ -1,0 +1,51 @@
+<article class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <a class="fw-semibold text-decoration-none" href="{% url 'profile' post.author.username %}">@{{ post.author.username }}</a>
+                <div class="small text-secondary">{{ post.created_at|timesince }} ago · {{ post.get_audience_display }}</div>
+            </div>
+            {% if user == post.author %}
+                <form method="post" action="{% url 'delete_post' post.pk %}">
+                    {% csrf_token %}<button class="btn btn-sm btn-link text-danger" type="submit">Delete</button>
+                </form>
+            {% elif user.is_authenticated %}
+                <details><summary class="small text-secondary">More</summary>
+                    <form method="post" action="{% url 'report_post' post.pk %}" class="mt-2">
+                        {% csrf_token %}<label class="visually-hidden" for="report-reason-{{ post.pk }}">Why report this post?</label>
+                        <input id="report-reason-{{ post.pk }}" class="form-control form-control-sm mb-2" name="reason" maxlength="500" required placeholder="Why report this post?">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Report</button>
+                    </form>
+                </details>
+            {% endif %}
+        </div>
+        {% if post.content %}<p class="mt-3 mb-2 text-break">{{ post.content|linebreaksbr }}</p>{% endif %}
+        {% if post.image %}<img class="img-fluid rounded post-image mt-2" src="{{ post.image.url }}" alt="Shared by {{ post.author.username }}">{% endif %}
+        <div class="d-flex gap-3 align-items-center border-top mt-3 pt-2 small text-secondary">
+            <span>{{ post.likes.count }} likes</span><span>{{ post.comments.count }} comments</span>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="d-flex gap-2 border-top mt-2 pt-2">
+            <form method="post" action="{% url 'toggle_like' post.pk %}">
+                {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn btn-sm btn-light" type="submit">{% if user in post.likes.all %}Unlike{% else %}Like{% endif %}</button>
+            </form>
+        </div>
+        {% endif %}
+        {% if post.comments_enabled %}
+        <div class="mt-2">
+            {% for comment in post.comments.all %}
+                <div class="comment-line small py-1"><a class="fw-semibold text-decoration-none" href="{% url 'profile' comment.author.username %}">{{ comment.author.username }}</a> {{ comment.content }}</div>
+            {% endfor %}
+            {% if user.is_authenticated %}
+            <form class="d-flex gap-2 mt-2" method="post" action="{% url 'add_comment' post.pk %}">
+                {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <label class="visually-hidden" for="comment-content-{{ post.pk }}">Write a comment</label>
+                <input id="comment-content-{{ post.pk }}" class="form-control form-control-sm" name="content" maxlength="2000" required placeholder="Write a comment...">
+                <button class="btn btn-sm btn-outline-primary" type="submit">Send</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</article>

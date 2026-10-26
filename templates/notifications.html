@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notifications | ConnectSphere{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+    <h1 class="h3 mb-4">Notifications</h1>
+    <section id="notification-list" class="card border-0 shadow-sm">
+        <div class="list-group list-group-flush">
+            {% for item in notifications %}
+                <div class="list-group-item {% if not item.is_read %}notification-unread{% endif %}">
+                    {% if item.post %}<a href="{% url 'profile' item.post.author.username %}">{% endif %}
+                    {{ item.message }}
+                    {% if item.post %}</a>{% endif %}
+                    <div class="small text-secondary">{{ item.created_at|timesince }} ago</div>
+                </div>
+            {% empty %}<div class="list-group-item text-secondary">You're all caught up.</div>{% endfor %}
+        </div>
+    </section>
+</div></div>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/notifications.js' %}"></script>{% endblock %}
